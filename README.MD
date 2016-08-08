@@ -1,0 +1,1 @@
+This is a simple applecation to store bookmarks exposing REST API. This application uses Spring Boot.
