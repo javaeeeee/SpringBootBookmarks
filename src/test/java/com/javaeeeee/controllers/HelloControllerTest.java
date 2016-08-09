@@ -26,6 +26,7 @@ package com.javaeeeee.controllers;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockServletContext;
@@ -48,6 +49,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @WebAppConfiguration
 public class HelloControllerTest {
     
+    private static final String NAME = "Phil";
     private MockMvc mvc;
     
     @Before
@@ -59,13 +61,46 @@ public class HelloControllerTest {
 
     /**
      * Test of getGreeting method, of class HelloController.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testGetGreeting() throws Exception {
         System.out.println("getGreeting");
         mvc.perform(MockMvcRequestBuilders.get("/hello"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string(HelloController.GREETING));
+                .andExpect(
+                        MockMvcResultMatchers
+                        .content()
+                        .string(HelloController.GREETING));
+    }
+
+    /**
+     * Test for customized greeting method with path parameter.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetPathParamGreeting() throws Exception {
+        
+        mvc.perform(MockMvcRequestBuilders.get("/hello/" + NAME))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers
+                        .content()
+                        .string("Hello " + NAME));
+    }
+
+    /**
+     * Test for customized greeting method with path parameter.
+     *
+     * @throws java.lang.Exception
+     */
+    public void testGetQueryParamGreeting() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/hello?name=" + NAME))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers
+                        .content()
+                        .string("Hello " + NAME));
     }
     
 }
