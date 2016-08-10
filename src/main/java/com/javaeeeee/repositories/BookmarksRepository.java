@@ -24,15 +24,16 @@
 package com.javaeeeee.repositories;
 
 import com.javaeeeee.entities.Bookmark;
+import java.util.Optional;
 import java.util.Set;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * Bookmarks repository.
  *
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
-public interface BookmarksRepository extends CrudRepository<Bookmark, Integer> {
+public interface BookmarksRepository extends PagingAndSortingRepository<Bookmark, Integer> {
 
     /**
      * A method to find bookmarks stored by a particular user identified by the
@@ -42,4 +43,9 @@ public interface BookmarksRepository extends CrudRepository<Bookmark, Integer> {
      * @return list of bookmarks stored by a particular user.
      */
     Set<Bookmark> findByUserUsername(String username);
+
+    /**
+     * A method to find a bookmark for a particular user with the id specified.
+     */
+    Optional<Bookmark> findByIdAndUserUsername(Integer id, String username);
 }

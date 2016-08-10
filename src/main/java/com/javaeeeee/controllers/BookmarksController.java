@@ -25,7 +25,8 @@ package com.javaeeeee.controllers;
 
 import com.javaeeeee.entities.Bookmark;
 import com.javaeeeee.entities.User;
-import com.javaeeeee.exceprion.UserNotFoundException;
+import com.javaeeeee.exception.BookmarkNotFoundException;
+import com.javaeeeee.exception.UserNotFoundException;
 import com.javaeeeee.repositories.BookmarksRepository;
 import com.javaeeeee.repositories.UsersRepository;
 import java.util.Optional;
@@ -79,15 +80,27 @@ public class BookmarksController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public Set<Bookmark> getAllBookmarks(@PathVariable String username) throws Exception {
-        if (!usersRepository.findByUsername(username).isPresent()) {
-            throw new UserNotFoundException(username);
-        }
+        validateUser(username);
         return bookmarksRepository.findByUserUsername(username);
     }
 
     /**
      * A method to find a bookmark by id.
      */
+    @RequestMapping(value = "/{bookmarkId}", method = RequestMethod.GET)
+    public Bookmark getBookmark(@PathVariable String username,
+            @PathVariable Integer bookmarkId) throws UserNotFoundException, BookmarkNotFoundException {
+        validateUser(username);
+        Optional<Bookmark> optional
+                = bookmarksRepository
+                .findByIdAndUserUsername(bookmarkId, username);
+        if (optional.isPresent()) {
+            return optional.get();
+        } else {
+            throw new BookmarkNotFoundException(bookmarkId.toString());
+        }
+    }
+
     /**
      * A method to add a bookmark.
      */
@@ -105,7 +118,19 @@ public class BookmarksController {
             throw new UserNotFoundException(username);
         }
     }
+
     /**
      * A method to edit a bookmark.
      */
+    /**
+     * A method to check if a user exists.
+     *
+     * @param username username.
+     * @throws UserNotFoundException thrown if user doesn't exist.
+     */
+    private void validateUser(String username) throws UserNotFoundException {
+        if (!usersRepository.findByUsername(username).isPresent()) {
+            throw new UserNotFoundException(username);
+        }
+    }
 }
