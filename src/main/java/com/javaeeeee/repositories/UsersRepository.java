@@ -24,6 +24,7 @@
 package com.javaeeeee.repositories;
 
 import com.javaeeeee.entities.User;
+import java.util.Optional;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
@@ -31,7 +32,12 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
-public interface UserRepository
+public interface UsersRepository
         extends PagingAndSortingRepository<User, Integer> {
+
+    /**
+     * Methods looks for a user by username.
+     */
+    Optional<User> findByUsername(String username);
 
 }

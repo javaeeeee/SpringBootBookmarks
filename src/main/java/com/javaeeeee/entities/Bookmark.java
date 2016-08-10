@@ -23,6 +23,7 @@
  */
 package com.javaeeeee.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -82,9 +83,9 @@ public class Bookmark implements Serializable {
     /**
      * The owner of a bookmark.
      */
+    @JsonIgnore
     @Basic(optional = false)
     @NotNull
-    @Column(name = "user_id", nullable = false)
     @ManyToOne
     private User user;
 

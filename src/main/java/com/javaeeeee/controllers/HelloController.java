@@ -71,7 +71,8 @@ public class HelloController {
      * @return Customized greeting.
      */
     @RequestMapping
-    public String getQueryParamGreeting(@RequestParam(value = "name", required = false) String name) {
+    public String getQueryParamGreeting(
+            @RequestParam(value = "name", required = false) String name) {
         if (name != null) {
             return "Hello " + name;
         } else {
