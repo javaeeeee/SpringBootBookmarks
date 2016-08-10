@@ -24,12 +24,16 @@
 package com.javaeeeee.controllers;
 
 import com.javaeeeee.entities.Bookmark;
+import com.javaeeeee.entities.User;
+import com.javaeeeee.exceprion.UserNotFoundException;
 import com.javaeeeee.repositories.BookmarksRepository;
 import com.javaeeeee.repositories.UsersRepository;
+import java.util.Optional;
 import java.util.Set;
-import javax.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,7 +79,33 @@ public class BookmarksController {
      */
     @RequestMapping(method = RequestMethod.GET)
     public Set<Bookmark> getAllBookmarks(@PathVariable String username) throws Exception {
-        // TODO: Add validation here.
+        if (!usersRepository.findByUsername(username).isPresent()) {
+            throw new UserNotFoundException(username);
+        }
         return bookmarksRepository.findByUserUsername(username);
     }
+
+    /**
+     * A method to find a bookmark by id.
+     */
+    /**
+     * A method to add a bookmark.
+     */
+    @RequestMapping(method = RequestMethod.POST)
+    Bookmark addBookmark(@PathVariable String username,
+            @RequestBody Bookmark bookmark) throws UserNotFoundException {
+        Optional<User> optional = usersRepository.findByUsername(username);
+        if (optional.isPresent()) {
+            User user = optional.get();
+            user.addBookmark(bookmark);
+            bookmark.setUser(user);
+            bookmarksRepository.save(bookmark);
+            return bookmark;
+        } else {
+            throw new UserNotFoundException(username);
+        }
+    }
+    /**
+     * A method to edit a bookmark.
+     */
 }

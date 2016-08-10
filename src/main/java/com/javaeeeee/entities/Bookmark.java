@@ -44,17 +44,7 @@ import javax.validation.constraints.Size;
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
 @Entity
-@Table(name = "bookmarks", catalog = "bookmarks", schema = "")
-@NamedQueries({
-    @NamedQuery(name = "Bookmark.findAll", query = "SELECT b FROM Bookmark b"),
-    @NamedQuery(name = "Bookmark.findById", query = "SELECT b FROM Bookmark b "
-            + "WHERE b.id = :id"),
-    @NamedQuery(name = "Bookmark.findByUrl", query = "SELECT b FROM Bookmark b "
-            + "WHERE b.url = :url"),
-    @NamedQuery(name = "Bookmark.findByDescription", query = "SELECT b FROM "
-            + "Bookmark b WHERE b.description = :description"),
-    @NamedQuery(name = "Bookmark.findByUserId", query = "SELECT b FROM "
-            + "Bookmark b WHERE b.user.id = :userId")})
+@Table(name = "bookmarks")
 public class Bookmark implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -98,13 +88,12 @@ public class Bookmark implements Serializable {
     /**
      * A constructor to create a bookmark.
      *
-     * @param id
-     * @param url
-     * @param user
+     * @param url bookmark URL.
+     * @param description bookmark description.
      */
-    public Bookmark(String url, User user) {
+    public Bookmark(String url, String description) {
         this.url = url;
-        this.user = user;
+        this.description = description;
     }
 
     /**

@@ -36,6 +36,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -45,15 +46,7 @@ import javax.validation.constraints.Size;
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
 @Entity
-@Table(name = "users", catalog = "bookmarks", schema = "")
-@NamedQueries({
-    @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
-    @NamedQuery(name = "User.findById", query = "SELECT u FROM User u "
-            + "WHERE u.id = :id"),
-    @NamedQuery(name = "User.findByUsername", query = "SELECT u FROM User u "
-            + "WHERE u.username = :username"),
-    @NamedQuery(name = "User.findByPassword", query = "SELECT u FROM User u "
-            + "WHERE u.password = :password")})
+@Table(name = "users")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -71,7 +64,7 @@ public class User implements Serializable {
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 255, unique = true)
     private String username;
     /**
      * A password to login to the application.
@@ -157,7 +150,7 @@ public class User implements Serializable {
             return false;
         }
         User other = (User) object;
-        if ((this.id == null && other.id != null) 
+        if ((this.id == null && other.id != null)
                 || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }

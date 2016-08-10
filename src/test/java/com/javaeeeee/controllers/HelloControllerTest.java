@@ -24,16 +24,13 @@
 package com.javaeeeee.controllers;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MockMvcBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -43,15 +40,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
  *
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+//New in SB 1.4
+@RunWith(SpringRunner.class)
 //New in SB 1.4
 @SpringBootTest(classes = MockServletContext.class)
 @WebAppConfiguration
 public class HelloControllerTest {
-    
+
     private static final String NAME = "Phil";
     private MockMvc mvc;
-    
+
     @Before
     public void setUp() {
         mvc = MockMvcBuilders
@@ -82,7 +80,7 @@ public class HelloControllerTest {
      */
     @Test
     public void testGetPathParamGreeting() throws Exception {
-        
+
         mvc.perform(MockMvcRequestBuilders.get("/hello/" + NAME))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers
@@ -102,5 +100,5 @@ public class HelloControllerTest {
                         .content()
                         .string("Hello " + NAME));
     }
-    
+
 }

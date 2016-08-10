@@ -21,26 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.javaeeeee.repositories;
+package com.javaeeeee.exceprion;
 
-import com.javaeeeee.entities.User;
-import java.util.Optional;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Users repository.
+ * The exception thrown when user is not found.
  *
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
-public interface UsersRepository
-        extends PagingAndSortingRepository<User, Integer> {
+@ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No such user.")
+public class UserNotFoundException extends Exception {
 
-    /**
-     * Methods looks for a user by username.
-     *
-     * @param username the name of the user to find.
-     * @return Optional of a user, empty if not found.
-     */
-    Optional<User> findByUsername(String username);
+    public UserNotFoundException() {
+    }
+
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+
+    public UserNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public UserNotFoundException(Throwable cause) {
+        super(cause);
+    }
+
+    public UserNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 
 }
