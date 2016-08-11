@@ -32,6 +32,8 @@ import com.javaeeeee.repositories.UsersRepository;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -104,7 +106,7 @@ public class BookmarksController {
      * A method to add a bookmark.
      */
     @RequestMapping(method = RequestMethod.POST)
-    Bookmark addBookmark(@PathVariable String username,
+    ResponseEntity<Bookmark> addBookmark(@PathVariable String username,
             @RequestBody Bookmark bookmark) throws UserNotFoundException {
         Optional<User> optional = usersRepository.findByUsername(username);
         if (optional.isPresent()) {
@@ -112,7 +114,7 @@ public class BookmarksController {
             user.addBookmark(bookmark);
             bookmark.setUser(user);
             bookmarksRepository.save(bookmark);
-            return bookmark;
+            return new ResponseEntity<>(bookmark, HttpStatus.CREATED);
         } else {
             throw new UserNotFoundException(username);
         }

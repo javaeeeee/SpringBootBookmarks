@@ -57,7 +57,7 @@ public class UsersRepositoryTest {
 
     @Before
     public void setUpMethod() {
-        entityManager.getEntityManager().createQuery("delete from User u").executeUpdate();
+        //entityManager.getEntityManager().createQuery("delete from User u").executeUpdate();
     }
 
     /**

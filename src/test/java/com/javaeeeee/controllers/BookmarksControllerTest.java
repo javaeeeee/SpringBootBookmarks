@@ -23,12 +23,17 @@
  */
 package com.javaeeeee.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javaeeeee.entities.Bookmark;
 import com.javaeeeee.entities.User;
 import com.javaeeeee.repositories.BookmarksRepository;
 import com.javaeeeee.repositories.UsersRepository;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
@@ -50,52 +55,153 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @WebMvcTest(BookmarksController.class)
 public class BookmarksControllerTest {
 
+    /**
+     * The Id of a test BOOKMARK.
+     */
+    private static final int BOOKMARK_ID = 1;
+    /**
+     * The URL of a test BOOKMARK.
+     */
+    private static final String URL = "http://economist.com";
+    /**
+     * A test BOOKMARK.
+     */
+    private static final Bookmark BOOKMARK = new Bookmark(URL, "Cool reading.");
+    /**
+     * The name of a test USER.
+     */
+    private static final String USERNAME = "Phil";
+    /**
+     * An id of a nonexistent bookmark.
+     */
+    private static final int NONEXISTENT_BOOKMARK_ID = 10967876;
+    /**
+     * A username of a nonexistent user.
+     */
+    private static final String NONEXISTENT_USERNAME = USERNAME + 10967876;
+    /**
+     * A test USER.
+     */
+    private static final User USER = new User(USERNAME, "1");
+
+    /**
+     * Mock MVC.
+     */
     @Autowired
     private MockMvc mvc;
 
+    /**
+     * Mock bookmarks repository.
+     */
     @MockBean
     private BookmarksRepository bookmarksRepository;
 
+    /**
+     * Mock USER repository.
+     */
     @MockBean
     private UsersRepository usersRepository;
 
     /**
-     * Test of getAllBookmarks method, of class BookmarksController.
+     * Initialization method.
+     */
+    @BeforeClass
+    public static void setUpClass() {
+        BOOKMARK.setId(BOOKMARK_ID);
+        BOOKMARK.setUser(USER);
+    }
+
+    /**
+     * Method carries out initialization before each method.
+     */
+    @Before
+    public void setUp() {
+        BDDMockito
+                .given(usersRepository.findByUsername(USERNAME))
+                .willReturn(Optional.of(USER));
+        BDDMockito
+                .given(usersRepository.findByUsername(NONEXISTENT_USERNAME))
+                .willReturn(Optional.empty());
+    }
+
+    /**
+     * Test of getAllBookmarks method, of class BookmarksController for an
+     * existent user.
+     *
+     * @throws java.lang.Exception
      */
     @Test
-    public void testGetAllBookmarks() throws Exception {
+    public void testGetAllBookmarksShouldOk() throws Exception {
+        BDDMockito.given(bookmarksRepository.findByUserUsername(USERNAME))
+                .willReturn(new HashSet<>(Arrays.asList(BOOKMARK)));
+
+        mvc.perform(MockMvcRequestBuilders.get("/" + USERNAME + "/bookmarks/"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers
+                        .jsonPath("$", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].url",
+                        Matchers.is(URL)));
+    }
+
+    /**
+     * Test of getAllBookmarks() method for a nonexistent user.
+     *
+     * @throws java.lang.Exception
+     */
+    public void testGetAllBookmarksNoSuchUser() throws Exception {
+        BDDMockito.given(bookmarksRepository.findByUserUsername(NONEXISTENT_USERNAME))
+                .willReturn(new HashSet<>());
+
+        mvc.perform(MockMvcRequestBuilders.get("/" + NONEXISTENT_USERNAME + "/bookmarks/"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     /**
      * Test of getBookmark method, of class BookmarksController.
      */
     @Test
-    public void testGetBookmark() throws Exception {
-        final String username = "Phil";
-        final String url = "http://economist.com";
-        final int bookmarkId = 1;
-        final User user = new User(username, "1");
-        final Bookmark bookmark = new Bookmark(url, "Cool reading.");
-        bookmark.setId(bookmarkId);
-        bookmark.setUser(user);
-        BDDMockito
-                .given(usersRepository.findByUsername(username))
-                .willReturn(Optional.of(user));
+    public void testGetBookmarkFound() throws Exception {
         BDDMockito
                 .given(bookmarksRepository
-                        .findByIdAndUserUsername(1, username))
-                .willReturn(Optional.of(bookmark));
+                        .findByIdAndUserUsername(BOOKMARK_ID, USERNAME))
+                .willReturn(Optional.of(BOOKMARK));
 
         mvc.perform(MockMvcRequestBuilders
-                .get("/" + username + "/bookmarks/" + bookmarkId)
-        //.accept(MediaType.TEXT_PLAIN)
-        )
+                .get("/" + USERNAME + "/bookmarks/" + BOOKMARK_ID))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id",
-                        Matchers.is(bookmarkId)))
+                        Matchers.is(BOOKMARK_ID)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.url",
-                        Matchers.is(url)));
+                        Matchers.is(URL)));
 
+    }
+
+    /**
+     * Method tests the situation when we loo for a non-existent bookmark.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testGetBookmarkNotFound() throws Exception {
+        BDDMockito
+                .given(bookmarksRepository
+                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME))
+                .willReturn(Optional.empty());
+
+        mvc.perform(MockMvcRequestBuilders
+                .get("/" + USERNAME + "/bookmarks/" + NONEXISTENT_BOOKMARK_ID))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testGetBookmarkNoSuchUser() throws Exception {
+        BDDMockito
+                .given(bookmarksRepository
+                        .findByIdAndUserUsername(BOOKMARK_ID, NONEXISTENT_USERNAME))
+                .willReturn(Optional.empty());
+        mvc.perform(MockMvcRequestBuilders
+                .get("/" + NONEXISTENT_USERNAME + "/bookmarks/" + BOOKMARK_ID))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     /**
@@ -103,6 +209,17 @@ public class BookmarksControllerTest {
      */
     @Test
     public void testAddBookmark() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonData = mapper.writeValueAsString(BOOKMARK);
+        mvc.perform(
+                MockMvcRequestBuilders.post("/" + USERNAME + "/bookmarks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonData))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id",
+                        Matchers.is(BOOKMARK_ID)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.url",
+                        Matchers.is(URL)));
     }
 
 }
