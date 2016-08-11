@@ -23,14 +23,20 @@
  */
 package com.javaeeeee.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javaeeeee.entities.Bookmark;
 import com.javaeeeee.entities.User;
 import com.javaeeeee.exception.BookmarkNotFoundException;
 import com.javaeeeee.exception.UserNotFoundException;
 import com.javaeeeee.repositories.BookmarksRepository;
 import com.javaeeeee.repositories.UsersRepository;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,17 +86,25 @@ public class BookmarksController {
      * @throws java.lang.Exception
      */
     @RequestMapping(method = RequestMethod.GET)
-    public Set<Bookmark> getAllBookmarks(@PathVariable String username) throws Exception {
+    public Set<Bookmark> getAllBookmarks(
+            @PathVariable(value = "username") String username)
+            throws Exception {
         validateUser(username);
         return bookmarksRepository.findByUserUsername(username);
     }
 
     /**
      * A method to find a bookmark by id.
+     *
+     * @param bookmarkId
+     * @throws com.javaeeeee.exception.UserNotFoundException
+     * @throws com.javaeeeee.exception.BookmarkNotFoundException
      */
     @RequestMapping(value = "/{bookmarkId}", method = RequestMethod.GET)
-    public Bookmark getBookmark(@PathVariable String username,
-            @PathVariable Integer bookmarkId) throws UserNotFoundException, BookmarkNotFoundException {
+    public Bookmark getBookmark(
+            @PathVariable(value = "username") String username,
+            @PathVariable(value = "bookmarkId") Integer bookmarkId)
+            throws UserNotFoundException, BookmarkNotFoundException {
         validateUser(username);
         Optional<Bookmark> optional
                 = bookmarksRepository
@@ -106,7 +120,8 @@ public class BookmarksController {
      * A method to add a bookmark.
      */
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<Bookmark> addBookmark(@PathVariable String username,
+    ResponseEntity<Bookmark> addBookmark(
+            @PathVariable(value = "username") String username,
             @RequestBody Bookmark bookmark) throws UserNotFoundException {
         Optional<User> optional = usersRepository.findByUsername(username);
         if (optional.isPresent()) {
@@ -122,7 +137,63 @@ public class BookmarksController {
 
     /**
      * A method to edit a bookmark.
+     *
+     * @param username
+     * @param bookmarkId
+     * @param json
+     * @return ResponseEntity containing the patched bookmark, if found, and
+     * status code.
+     * @throws java.io.IOException
+     * @throws java.lang.reflect.InvocationTargetException
+     * @throws com.javaeeeee.exception.BookmarkNotFoundException
+     * @throws java.lang.IllegalAccessException
      */
+    @RequestMapping(value = "/{bookmarkId}", method = RequestMethod.PUT)
+    public ResponseEntity<Bookmark> editBookmark(
+            @PathVariable(value = "username") String username,
+            @PathVariable(value = "bookmarkId") int bookmarkId,
+            @RequestBody String json) throws IOException,
+            BookmarkNotFoundException,
+            IllegalAccessException,
+            InvocationTargetException {
+
+        Optional<Bookmark> optional = bookmarksRepository
+                .findByIdAndUserUsername(bookmarkId, username);
+        if (optional.isPresent()) {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> changeMap = mapper.readValue(json, HashMap.class);
+            Bookmark bookmark = optional.get();
+            BeanUtils.populate(bookmark, changeMap);
+            return new ResponseEntity<>(bookmark, HttpStatus.OK);
+        } else {
+            throw new BookmarkNotFoundException(
+                    "Bookmark not found id = " + bookmarkId);
+        }
+
+    }
+
+    /**
+     * A method to delete a bookmark identified by id.
+     *
+     * @param username user name
+     * @param bookmarkId The id of the bookmark to be deleted.
+     * @return ResponseEntity containing a deleted bookmark, if found, and
+     * status code.
+     */
+    @RequestMapping(value = "/{bookmarkId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Bookmark> deleteBookmark(
+            @PathVariable(value = "username") String username,
+            @PathVariable(value = "bookmarkId") int bookmarkId) throws BookmarkNotFoundException {
+        Optional<Bookmark> optional
+                = bookmarksRepository.findByIdAndUserUsername(bookmarkId, username);
+        if (optional.isPresent()) {
+            bookmarksRepository.delete(optional.get());
+            return new ResponseEntity<>(optional.get(), HttpStatus.OK);
+        } else {
+            throw new BookmarkNotFoundException("Bookmark not found. id = " + bookmarkId);
+        }
+    }
+
     /**
      * A method to check if a user exists.
      *
@@ -134,4 +205,5 @@ public class BookmarksController {
             throw new UserNotFoundException(username);
         }
     }
+
 }

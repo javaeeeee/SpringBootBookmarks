@@ -64,9 +64,13 @@ public class BookmarksControllerTest {
      */
     private static final String URL = "http://economist.com";
     /**
+     * Bookmark description.
+     */
+    private static final String BM_DESCRIPTION = "Cool reading.";
+    /**
      * A test BOOKMARK.
      */
-    private static final Bookmark BOOKMARK = new Bookmark(URL, "Cool reading.");
+    private static final Bookmark BOOKMARK = new Bookmark(URL, BM_DESCRIPTION);
     /**
      * The name of a test USER.
      */
@@ -83,6 +87,14 @@ public class BookmarksControllerTest {
      * A test USER.
      */
     private static final User USER = new User(USERNAME, "1");
+    /**
+     * A URL to change in PUT method.
+     */
+    private static final String NEW_URL = "http://time.com";
+    /**
+     * A JSON string for PUT method test.
+     */
+    private static final String JSON_DATA = String.format("{\"url\":\"%s\"}", NEW_URL);
 
     /**
      * Mock MVC.
@@ -222,4 +234,95 @@ public class BookmarksControllerTest {
                         Matchers.is(URL)));
     }
 
+    /**
+     * Method testing editing a bookmark when a bookmark is not found.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testEditBookmarkNotFound() throws Exception {
+        BDDMockito
+                .given(bookmarksRepository
+                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME))
+                .willReturn(Optional.empty());
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/" + USERNAME + "/bookmarks/" + NONEXISTENT_BOOKMARK_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSON_DATA)
+        ).andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    /**
+     * Method to test editing a bookmark, happy path.
+     */
+    @Test
+    public void testEditBookmarkShouldOk() throws Exception {
+
+        BDDMockito
+                .given(bookmarksRepository
+                        .findByIdAndUserUsername(BOOKMARK_ID, USERNAME))
+                .willReturn(Optional.of(BOOKMARK));
+
+        mvc.perform(MockMvcRequestBuilders
+                .put("/" + USERNAME + "/bookmarks/" + BOOKMARK_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSON_DATA))
+                .andExpect(
+                        MockMvcResultMatchers.status().isOk())
+                .andExpect(
+                        MockMvcResultMatchers
+                        .jsonPath("$.id", Matchers.is(BOOKMARK_ID)))
+                .andExpect(MockMvcResultMatchers
+                        .jsonPath("$.url", Matchers.is(NEW_URL)))
+                .andExpect(MockMvcResultMatchers
+                        .jsonPath("$.description",
+                                Matchers.is(BM_DESCRIPTION)));
+
+        BOOKMARK.setUrl(URL);
+    }
+
+    /**
+     * Method tests Delete for a nonexistent bookmark.
+     */
+    @Test
+    public void testDeleteBookmarkNotFound() throws Exception {
+        BDDMockito
+                .given(bookmarksRepository
+                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME))
+                .willReturn(Optional.empty());
+        BDDMockito.doNothing().when(bookmarksRepository).delete(BOOKMARK);
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/" + USERNAME + "/bookmarks/" + NONEXISTENT_BOOKMARK_ID))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        BDDMockito
+                .verify(bookmarksRepository)
+                .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
+    }
+
+    /**
+     * Method tests successful delete.
+     */
+    @Test
+    public void testDeleteBookmarkHappyPath() throws Exception {
+        BDDMockito
+                .given(bookmarksRepository
+                        .findByIdAndUserUsername(BOOKMARK_ID, USERNAME))
+                .willReturn(Optional.of(BOOKMARK));
+        BDDMockito.doNothing().when(bookmarksRepository).delete(BOOKMARK);
+
+        mvc.perform(MockMvcRequestBuilders
+                .delete("/" + USERNAME + "/bookmarks/" + BOOKMARK_ID))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        BDDMockito
+                .verify(bookmarksRepository)
+                .findByIdAndUserUsername(BOOKMARK_ID, USERNAME);
+        BDDMockito
+                .verify(bookmarksRepository).delete(BOOKMARK);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
+    }
 }
