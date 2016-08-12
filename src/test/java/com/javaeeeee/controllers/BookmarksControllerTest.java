@@ -94,7 +94,8 @@ public class BookmarksControllerTest {
     /**
      * A JSON string for PUT method test.
      */
-    private static final String JSON_DATA = String.format("{\"url\":\"%s\"}", NEW_URL);
+    private static final String JSON_DATA
+            = String.format("{\"url\":\"%s\"}", NEW_URL);
 
     /**
      * Mock MVC.
@@ -161,15 +162,19 @@ public class BookmarksControllerTest {
      * @throws java.lang.Exception
      */
     public void testGetAllBookmarksNoSuchUser() throws Exception {
-        BDDMockito.given(bookmarksRepository.findByUserUsername(NONEXISTENT_USERNAME))
+        BDDMockito.given(bookmarksRepository
+                .findByUserUsername(NONEXISTENT_USERNAME))
                 .willReturn(new HashSet<>());
 
-        mvc.perform(MockMvcRequestBuilders.get("/" + NONEXISTENT_USERNAME + "/bookmarks/"))
+        mvc.perform(MockMvcRequestBuilders
+                .get("/" + NONEXISTENT_USERNAME + "/bookmarks/"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     /**
      * Test of getBookmark method, of class BookmarksController.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testGetBookmarkFound() throws Exception {
@@ -197,7 +202,8 @@ public class BookmarksControllerTest {
     public void testGetBookmarkNotFound() throws Exception {
         BDDMockito
                 .given(bookmarksRepository
-                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME))
+                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID,
+                                USERNAME))
                 .willReturn(Optional.empty());
 
         mvc.perform(MockMvcRequestBuilders
@@ -205,11 +211,17 @@ public class BookmarksControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
+    /**
+     * Method tests bookmark extraction for a nonexistent user.
+     *
+     * @throws Exception
+     */
     @Test
     public void testGetBookmarkNoSuchUser() throws Exception {
         BDDMockito
                 .given(bookmarksRepository
-                        .findByIdAndUserUsername(BOOKMARK_ID, NONEXISTENT_USERNAME))
+                        .findByIdAndUserUsername(BOOKMARK_ID,
+                                NONEXISTENT_USERNAME))
                 .willReturn(Optional.empty());
         mvc.perform(MockMvcRequestBuilders
                 .get("/" + NONEXISTENT_USERNAME + "/bookmarks/" + BOOKMARK_ID))
@@ -243,7 +255,8 @@ public class BookmarksControllerTest {
     public void testEditBookmarkNotFound() throws Exception {
         BDDMockito
                 .given(bookmarksRepository
-                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME))
+                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID,
+                                USERNAME))
                 .willReturn(Optional.empty());
 
         mvc.perform(MockMvcRequestBuilders
@@ -255,6 +268,8 @@ public class BookmarksControllerTest {
 
     /**
      * Method to test editing a bookmark, happy path.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testEditBookmarkShouldOk() throws Exception {
@@ -284,12 +299,15 @@ public class BookmarksControllerTest {
 
     /**
      * Method tests Delete for a nonexistent bookmark.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testDeleteBookmarkNotFound() throws Exception {
         BDDMockito
                 .given(bookmarksRepository
-                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME))
+                        .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID,
+                                USERNAME))
                 .willReturn(Optional.empty());
         BDDMockito.doNothing().when(bookmarksRepository).delete(BOOKMARK);
 
@@ -305,6 +323,7 @@ public class BookmarksControllerTest {
 
     /**
      * Method tests successful delete.
+     * @throws java.lang.Exception
      */
     @Test
     public void testDeleteBookmarkHappyPath() throws Exception {
