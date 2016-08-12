@@ -86,4 +86,31 @@ public class UsersRepositoryTest {
 
         Assert.assertFalse(optional.isPresent());
     }
+
+    /**
+     * Method tests happy path.
+     */
+    @Test
+    public void findByUsernameAndPasswordShouldReturnUser() {
+        final String name = "Phil";
+        final String password = "1";
+        entityManager.persist(new User(name, password));
+        Optional<User> optional = usersRepository.findByUsernameAndPassword(name, password);
+
+        Assert.assertTrue(optional.isPresent());
+    }
+
+    /**
+     * Method tests sad path.
+     */
+    @Test
+    public void findByUsernameAndPasswordShouldReturnEmpty() {
+        final String name = "Phil";
+        final String password = "1";
+        entityManager.persist(new User(name, password));
+        Optional<User> optional = usersRepository
+                .findByUsernameAndPassword(name, password + "mmm");
+
+        Assert.assertFalse(optional.isPresent());
+    }
 }

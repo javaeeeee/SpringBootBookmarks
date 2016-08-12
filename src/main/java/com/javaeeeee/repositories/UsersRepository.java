@@ -36,11 +36,20 @@ public interface UsersRepository
         extends PagingAndSortingRepository<User, Integer> {
 
     /**
-     * Methods looks for a user by username.
+     * The method looks for a user by username.
      *
      * @param username the name of the user to find.
      * @return Optional of a user, empty if not found.
      */
     Optional<User> findByUsername(String username);
 
+    /**
+     * The method looks for a user by username and password for authentication
+     * purposes.
+     *
+     * @param username
+     * @param password
+     * @return Optional of user if found and empty Optional otherwise.
+     */
+    Optional<User> findByUsernameAndPassword(String username, String password);
 }
