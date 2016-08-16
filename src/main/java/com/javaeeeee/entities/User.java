@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -36,6 +37,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import org.springframework.util.Assert;
 
 /**
  * A class to store application user data.
@@ -45,7 +47,7 @@ import javax.validation.constraints.Size;
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
-
+    
     private static final long serialVersionUID = 1L;
     /**
      * The auto-generated id of a user.
@@ -74,7 +76,7 @@ public class User implements Serializable {
     /**
      * Bookmark list of a user.
      */
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Bookmark> bookmarks = new HashSet<>();
 
     /**
@@ -90,34 +92,38 @@ public class User implements Serializable {
      * @param password
      */
     public User(String username, String password) {
+        Assert.hasLength(username);
+        Assert.hasLength(password);
         this.username = username;
         this.password = password;
     }
-
+    
     public Integer getId() {
         return id;
     }
-
+    
     public void setId(Integer id) {
         this.id = id;
     }
-
+    
     public String getUsername() {
         return username;
     }
-
+    
     public void setUsername(String username) {
+        Assert.hasLength(username);
         this.username = username;
     }
-
+    
     public String getPassword() {
         return password;
     }
-
+    
     public void setPassword(String password) {
+        Assert.hasLength(password);
         this.password = password;
     }
-
+    
     public Set<Bookmark> getBookmarks() {
         return bookmarks;
     }
@@ -129,17 +135,19 @@ public class User implements Serializable {
      * @return the added bookmark.
      */
     public Bookmark addBookmark(Bookmark bookmark) {
+        Assert.notNull(bookmark);
         bookmarks.add(bookmark);
+        bookmark.setUser(this);
         return bookmark;
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 0;
         hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
-
+    
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
@@ -153,11 +161,11 @@ public class User implements Serializable {
         }
         return true;
     }
-
+    
     @Override
     public String toString() {
         return "User{" + "id=" + id
                 + ", username=" + username + ", password=" + password + '}';
     }
-
+    
 }

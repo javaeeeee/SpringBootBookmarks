@@ -33,7 +33,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  * @author Dmitry Noranovich <javaeeeee at gmail dot com>
  */
-public interface BookmarksRepository extends PagingAndSortingRepository<Bookmark, Integer> {
+public interface BookmarksRepository
+        extends PagingAndSortingRepository<Bookmark, Integer> {
 
     /**
      * A method to find bookmarks stored by a particular user identified by the

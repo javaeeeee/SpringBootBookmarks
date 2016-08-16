@@ -35,6 +35,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import org.springframework.util.Assert;
 
 /**
  * An entity to store bookmarks.
@@ -90,6 +91,7 @@ public class Bookmark implements Serializable {
      * @param description bookmark description.
      */
     public Bookmark(String url, String description) {
+        Assert.hasLength(url);
         this.url = url;
         this.description = description;
     }
@@ -117,6 +119,7 @@ public class Bookmark implements Serializable {
     }
 
     public void setUrl(String url) {
+        Assert.hasLength(url);
         this.url = url;
     }
 
@@ -133,6 +136,7 @@ public class Bookmark implements Serializable {
     }
 
     public void setUser(User user) {
+        Assert.notNull(user);
         this.user = user;
     }
 
