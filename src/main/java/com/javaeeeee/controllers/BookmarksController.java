@@ -156,20 +156,22 @@ public class BookmarksController {
             BookmarkNotFoundException,
             IllegalAccessException,
             InvocationTargetException {
-
+        
         Optional<Bookmark> optional = bookmarksRepository
                 .findByIdAndUserUsername(bookmarkId, username);
         if (optional.isPresent()) {
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, String> changeMap = mapper.readValue(json, HashMap.class);
+            Map<String, String> changeMap
+                    = mapper.readValue(json, HashMap.class);
             Bookmark bookmark = optional.get();
             BeanUtils.populate(bookmark, changeMap);
+            bookmark = bookmarksRepository.save(bookmark);
             return new ResponseEntity<>(bookmark, HttpStatus.OK);
         } else {
             throw new BookmarkNotFoundException(
                     "Bookmark not found id = " + bookmarkId);
         }
-
+        
     }
 
     /**
@@ -205,5 +207,5 @@ public class BookmarksController {
             throw new UserNotFoundException(username);
         }
     }
-
+    
 }

@@ -28,6 +28,7 @@ import com.javaeeeee.entities.Bookmark;
 import com.javaeeeee.entities.User;
 import com.javaeeeee.repositories.BookmarksRepository;
 import com.javaeeeee.repositories.UsersRepository;
+import com.sun.webkit.network.URLs;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -156,6 +157,11 @@ public class BookmarksControllerTest {
                         .jsonPath("$", Matchers.hasSize(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].url",
                         Matchers.is(URL)));
+
+        BDDMockito.verify(usersRepository).findByUsername(USERNAME);
+        BDDMockito.verifyNoMoreInteractions(usersRepository);
+        BDDMockito.verify(bookmarksRepository).findByUserUsername(USERNAME);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
     }
 
     /**
@@ -171,6 +177,12 @@ public class BookmarksControllerTest {
         mvc.perform(MockMvcRequestBuilders
                 .get("/" + NONEXISTENT_USERNAME + "/bookmarks/"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        BDDMockito.verify(usersRepository).findByUsername(USERNAME);
+        BDDMockito.verifyNoMoreInteractions(usersRepository);
+        BDDMockito.verify(bookmarksRepository)
+                .findByIdAndUserUsername(BOOKMARK_ID, USERNAME);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
     }
 
     /**
@@ -193,6 +205,10 @@ public class BookmarksControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.url",
                         Matchers.is(URL)));
 
+        BDDMockito.verify(bookmarksRepository)
+                .findByIdAndUserUsername(BOOKMARK_ID, USERNAME);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
+
     }
 
     /**
@@ -211,6 +227,10 @@ public class BookmarksControllerTest {
         mvc.perform(MockMvcRequestBuilders
                 .get("/" + USERNAME + "/bookmarks/" + NONEXISTENT_BOOKMARK_ID))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        BDDMockito.verify(bookmarksRepository)
+                .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
     }
 
     /**
@@ -228,6 +248,10 @@ public class BookmarksControllerTest {
         mvc.perform(MockMvcRequestBuilders
                 .get("/" + NONEXISTENT_USERNAME + "/bookmarks/" + BOOKMARK_ID))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        BDDMockito.verify(usersRepository).findByUsername(NONEXISTENT_USERNAME);
+        BDDMockito.verifyNoMoreInteractions(usersRepository);
+        BDDMockito.verifyZeroInteractions(bookmarksRepository);
     }
 
     /**
@@ -237,6 +261,7 @@ public class BookmarksControllerTest {
     public void testAddBookmark() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String jsonData = mapper.writeValueAsString(BOOKMARK);
+
         mvc.perform(
                 MockMvcRequestBuilders.post("/" + USERNAME + "/bookmarks")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -246,6 +271,11 @@ public class BookmarksControllerTest {
                         Matchers.is(BOOKMARK_ID)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.url",
                         Matchers.is(URL)));
+
+        BDDMockito.verify(usersRepository).findByUsername(USERNAME);
+        BDDMockito.verifyNoMoreInteractions(usersRepository);
+        BDDMockito.verify(bookmarksRepository).save(BOOKMARK);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
     }
 
     /**
@@ -266,6 +296,10 @@ public class BookmarksControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSON_DATA)
         ).andExpect(MockMvcResultMatchers.status().isNotFound());
+
+        BDDMockito.verify(bookmarksRepository)
+                .findByIdAndUserUsername(NONEXISTENT_BOOKMARK_ID, USERNAME);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
     }
 
     /**
@@ -281,6 +315,15 @@ public class BookmarksControllerTest {
                         .findByIdAndUserUsername(BOOKMARK_ID, USERNAME))
                 .willReturn(Optional.of(BOOKMARK));
 
+        Bookmark newBookmark
+                = new Bookmark(NEW_URL, BOOKMARK.getDescription());
+        newBookmark.setId(BOOKMARK.getId());
+        newBookmark.setUser(BOOKMARK.getUser());
+
+        BDDMockito
+                .given(bookmarksRepository.save(newBookmark))
+                .willReturn(newBookmark);
+
         mvc.perform(MockMvcRequestBuilders
                 .put("/" + USERNAME + "/bookmarks/" + BOOKMARK_ID)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -295,6 +338,14 @@ public class BookmarksControllerTest {
                 .andExpect(MockMvcResultMatchers
                         .jsonPath("$.description",
                                 Matchers.is(BM_DESCRIPTION)));
+
+        BDDMockito
+                .verify(bookmarksRepository)
+                .findByIdAndUserUsername(BOOKMARK_ID, USERNAME);
+        BDDMockito
+                .verify(bookmarksRepository)
+                .save(newBookmark);
+        BDDMockito.verifyNoMoreInteractions(bookmarksRepository);
 
         BOOKMARK.setUrl(URL);
     }

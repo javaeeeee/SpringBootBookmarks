@@ -60,7 +60,9 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .httpBasic()
                 .and()
-                .cors();
+                .cors()
+                .and()
+                .csrf().disable();
     }
 
 }
